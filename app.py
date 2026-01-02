@@ -278,21 +278,18 @@ def check_auth():
     })
 
 # ==============================================================================
-#                               ADMIN & REPORTING APIs
+#                               ADMIN & REPORTING
 # ==============================================================================
 
-# --- MODIFIED: Admin Dashboard Route (Hidden User Details) ---
+# --- MODIFIED: Admin Dashboard Route ---
 @app.route('/admin')
 def admin_dashboard():
     # Admin Policy: Strict Access Control
     if not session.get('is_admin'):
         return redirect(url_for('login_page'))
 
-    # We do NOT pass user data here anymore. 
-    # Data is fetched via AJAX from the /api/users endpoint.
-    user_data = [] 
-    
-    return render_template('admin.html', users=user_data)
+    # We do NOT pass data here anymore. The frontend fetches it via AJAX.
+    return render_template('admin.html', users=[], logs=[])
 
 @app.route('/api/stats')
 def get_stats():
@@ -520,8 +517,13 @@ def generate_quiz():
 
 @app.route('/make-ppt', methods=['POST'])
 def make_ppt():
-    topic = request.form.get('topic', '')
+    # 1. Get Data from Request
+    topic = request.form.get('topic', 'Presentation')
+    source_text = request.form.get('source_text', '') # <--- NOW USING YOUR INPUT TEXT
+
     log_activity('text_gen', f'Generated PPT: {topic}')
+    
+    # 2. Handle Template (Optional)
     template = request.files.get('template_file')
     prs = Presentation()
     if template:
@@ -531,26 +533,61 @@ def make_ppt():
         except: prs = Presentation()
         if os.path.exists(t_path): os.remove(t_path)
     
-    prompt = f"Create 4 slide outline about {topic}. Format:\nSLIDE: Title\nPOINT: Bullet"
-    ai_text = get_groq_response("Presentation generator.", prompt)
-    clean = clean_ai_text(ai_text)
+    # 3. Build Stronger AI Prompt
+    # We combine the topic and the detailed source text
+    content_input = f"TOPIC: {topic}\nDETAILS: {source_text}"
     
+    system_instruction = (
+        "You are a presentation generator. "
+        "Convert the user's input into a slide deck structure. "
+        "Strictly follow this format for every slide:\n"
+        "SLIDE: [Title of the Slide]\n"
+        "POINT: [Bullet point content]\n"
+        "POINT: [Bullet point content]\n"
+        "Do not output any conversational text, only the slide structure."
+    )
+
+    # 4. Get AI Response
+    ai_text = get_groq_response(system_instruction, content_input)
+    clean_response = clean_ai_text(ai_text)
+    
+    # 5. Parse and Build Slides
     slide = None
-    for line in clean.split('\n'):
+    for line in clean_response.split('\n'):
         line = line.strip()
-        if line.startswith("SLIDE:"):
-            slide = prs.slides.add_slide(prs.slide_layouts[1] if len(prs.slide_layouts)>1 else prs.slide_layouts[0])
-            try: slide.shapes.title.text = line.replace("SLIDE:", "").strip()
-            except: pass
-        elif line.startswith("POINT:") and slide:
-            try:
-                tf = slide.placeholders[1].text_frame
-                p = tf.add_paragraph()
-                p.text = line.replace("POINT:", "").strip()
+        
+        # Check for Slide Title (Case Insensitive)
+        if line.upper().startswith("SLIDE:") or line.upper().startswith("SLIDE "):
+            # Create a new slide (Layout 1 is usually Title + Content)
+            layout = prs.slide_layouts[1] if len(prs.slide_layouts) > 1 else prs.slide_layouts[0]
+            slide = prs.slides.add_slide(layout)
+            
+            # Extract title text
+            title_text = line.split(':', 1)[-1].strip() if ':' in line else line
+            try: slide.shapes.title.text = title_text
             except: pass
             
+        # Check for Bullet Points (Handle 'POINT:', '-', or '*')
+        elif (line.upper().startswith("POINT:") or line.startswith("-") or line.startswith("*")) and slide:
+            # Extract point text
+            if line.upper().startswith("POINT:"):
+                point_text = line.split(':', 1)[-1].strip()
+            else:
+                point_text = line.lstrip("-* ").strip()
+            
+            try:
+                # Add paragraph to the text body
+                tf = slide.placeholders[1].text_frame
+                p = tf.add_paragraph()
+                p.text = point_text
+                p.level = 0 # Top level bullet
+            except: pass
+            
+    # 6. Save File
     fname = f"presentation_{uuid.uuid4().hex[:8]}.pptx"
-    prs.save(os.path.join(STATIC_FOLDER, fname))
+    save_path = os.path.join(STATIC_FOLDER, fname)
+    prs.save(save_path)
+    
     return jsonify({"success": True, "file_url": f"/static/{fname}"})
 
 @app.route('/text-to-audio', methods=['POST'])

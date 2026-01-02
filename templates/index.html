@@ -687,6 +687,10 @@
                         <i class="fas fa-users"></i> Users
                     </button>
 
+                    <button class="nav-btn-custom" id="admin-btn-create" onclick="openCreateUserModal()">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+
                     <button class="nav-btn-custom" id="admin-btn-activity" onclick="showAdminSection('activity', 'User Activity')">
                         <i class="fas fa-list-ul"></i> User Activity
                     </button>
@@ -708,7 +712,7 @@
             </div>
 
             <div id="authContainer">
-                </div>
+            </div>
         </div>
     </aside>
 
@@ -1022,19 +1026,26 @@
 
                 <div id="admin-section-users" class="admin-section" style="display:none;">
                     <div class="card-box">
-                        <h6 class="fw-bold mb-4" style="color: var(--text-dark);">User Management</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="fw-bold mb-0" style="color: var(--text-dark);">User Management</h6>
+                            <button onclick="openCreateUserModal()" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-1"></i> Add User
+                            </button>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-custom align-middle">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Username</th>
+                                        <th>Full Name</th>
+                                        <th>Dept</th>
                                         <th>Last Active</th>
                                         <th>Total Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersTableBody">
-                                    <tr><td colspan="4" class="text-center text-muted py-3">Loading users...</td></tr>
+                                    <tr><td colspan="6" class="text-center text-muted py-3">Loading users...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1075,7 +1086,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
         </div>
@@ -1137,6 +1147,48 @@
       </div>
     </div>
 
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 pb-0">
+              <h5 class="modal-title fw-bold ms-2 mt-2" style="color: var(--text-dark);">Create New Account</h5>
+              <button type="button" class="btn-close me-2 mt-2" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 pt-3">
+              <div id="registerAlert" class="alert alert-danger d-none small py-2">Error creating account</div>
+              <div id="registerSuccess" class="alert alert-success d-none small py-2">Account created successfully!</div>
+              
+              <form id="registerForm">
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label small fw-bold text-muted">FULL NAME</label>
+                        <input type="text" class="form-control" id="regFullname" placeholder="John Doe">
+                    </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold text-muted">DEPARTMENT / ROLE</label>
+                  <select class="form-select" id="regDept">
+                      <option value="General">General User</option>
+                      <option value="Marketing">Marketing</option>
+                      <option value="IT">IT / Admin</option>
+                      <option value="HR">Human Resources</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-bold text-muted">USERNAME (Email)</label>
+                  <input type="text" class="form-control" id="regUsername" required>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label small fw-bold text-muted">PASSWORD</label>
+                  <input type="password" class="form-control" id="regPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">Create Account</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1144,99 +1196,56 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <script>
-        // =======================================================
-        // 1. INITIAL SETUP
-        // =======================================================
+        // Setup
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-
-        // Initialize Quill Editor for PDF Tool
         var quill = new Quill('#editor-container', { 
             theme: 'snow', 
             modules: { toolbar: [['bold', 'italic', 'underline'], [{'list':'ordered'}, {'list':'bullet'}], ['clean']] } 
         });
 
-        // =======================================================
-        // 2. SIDEBAR LOGIC
-        // =======================================================
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('show');
-            overlay.classList.toggle('show');
-        }
+        // Sidebar
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('show'); document.getElementById('sidebarOverlay').classList.toggle('show'); }
+        function closeSidebarOnMobile() { if (window.innerWidth <= 991) toggleSidebar(); }
 
-        function closeSidebarOnMobile() { 
-            if (window.innerWidth <= 991) toggleSidebar(); 
-        }
+        // Dropdowns
+        const globalLangs = [{c:'en',n:'English'},{c:'hi',n:'Hindi'},{c:'ta',n:'Tamil'},{c:'ml',n:'Malayalam'},{c:'te',n:'Telugu'},{c:'kn',n:'Kannada'},{c:'es',n:'Spanish'},{c:'fr',n:'French'},{c:'de',n:'German'},{c:'zh',n:'Chinese'},{c:'ja',n:'Japanese'},{c:'ru',n:'Russian'}];
+        document.querySelectorAll('.language-list, .language-list-auto, .voice-list').forEach(sel => { sel.innerHTML = ''; if(sel.classList.contains('language-list-auto')) sel.add(new Option("Auto-detect", "Auto-detect")); globalLangs.forEach(l => sel.add(new Option(l.n, l.c))); });
+        const sl = document.getElementById('speechLangSelect'); if(sl) { sl.innerHTML = ''; [{c:'en-US',n:'English (US)'},{c:'hi-IN',n:'Hindi'},{c:'ta-IN',n:'Tamil'},{c:'te-IN',n:'Telugu'},{c:'kn-IN',n:'Kannada'},{c:'ml-IN',n:'Malayalam'},{c:'es-ES',n:'Spanish'},{c:'fr-FR',n:'French'},{c:'de-DE',n:'German'}].forEach(x => sl.add(new Option(x.n, x.c))); }
 
-        // =======================================================
-        // 3. LANGUAGE DROPDOWN POPULATION
-        // =======================================================
-        const globalLangs = [
-            {c:'en', n:'English'}, {c:'hi', n:'Hindi'}, {c:'ta', n:'Tamil'}, 
-            {c:'ml', n:'Malayalam'}, {c:'te', n:'Telugu'}, {c:'kn', n:'Kannada'},
-            {c:'es', n:'Spanish'}, {c:'fr', n:'French'}, {c:'de', n:'German'},
-            {c:'zh', n:'Chinese'}, {c:'ja', n:'Japanese'}, {c:'ru', n:'Russian'}
-        ];
-        
-        // Fill translation and voice dropdowns
-        document.querySelectorAll('.language-list, .language-list-auto, .voice-list').forEach(sel => {
-            sel.innerHTML = '';
-            if(sel.classList.contains('language-list-auto')) sel.add(new Option("Auto-detect", "Auto-detect"));
-            globalLangs.forEach(l => sel.add(new Option(l.n, l.c)));
-        });
-
-        // Fill Speech Recognition specific dropdown
-        const sl = document.getElementById('speechLangSelect');
-        if(sl) { 
-            sl.innerHTML = '';
-            const speechLanguages = [
-                {c: 'en-US', n: 'English (US)'}, {c: 'en-GB', n: 'English (UK)'}, {c: 'en-IN', n: 'English (India)'},
-                {c: 'hi-IN', n: 'Hindi'}, {c: 'ta-IN', n: 'Tamil'}, {c: 'te-IN', n: 'Telugu'},
-                {c: 'kn-IN', n: 'Kannada'}, {c: 'ml-IN', n: 'Malayalam'}, {c: 'es-ES', n: 'Spanish'},
-                {c: 'fr-FR', n: 'French'}, {c: 'de-DE', n: 'German'}
-            ];
-            speechLanguages.forEach(x => sl.add(new Option(x.n, x.c))); 
-        }
-
-        // =======================================================
-        // 4. NAVIGATION LOGIC (UPDATED)
-        // =======================================================
-        function showUserSection(sectionId, headerTitle) {
-            document.getElementById('headerTitle').innerText = headerTitle;
-            document.querySelectorAll('.user-section').forEach(el => el.style.display = 'none');
-            document.getElementById(`user-section-${sectionId}`).style.display = 'block';
-            
-            document.querySelectorAll('.nav-btn-custom').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.querySelector(`button[onclick*="'${sectionId}'"]`);
+        // Navigation
+        function showUserSection(id, title) {
+            document.getElementById('headerTitle').innerText = title;
+            document.querySelectorAll('.user-section').forEach(e => e.style.display = 'none');
+            document.getElementById(`user-section-${id}`).style.display = 'block';
+            document.querySelectorAll('.nav-btn-custom').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`button[onclick*="'${id}'"]`);
             if(activeBtn) activeBtn.classList.add('active');
+            closeSidebarOnMobile();
+        }
+
+        function showAdminSection(id, title) {
+            document.getElementById('headerTitle').innerText = title;
+            document.querySelectorAll('.admin-section').forEach(e => e.style.display = 'none');
+            document.getElementById(`admin-section-${id}`).style.display = 'block';
+            
+            document.querySelectorAll('#adminToolsNavigation .nav-btn-custom').forEach(b => b.classList.remove('active'));
+            if(id === 'live-load') document.getElementById('admin-btn-live').classList.add('active');
+            if(id === 'users') document.getElementById('admin-btn-users').classList.add('active');
+            if(id === 'activity') document.getElementById('admin-btn-activity').classList.add('active');
+
+            if(id === 'users') loadUsers();
+            if(id === 'activity') loadActivityLogs();
             
             closeSidebarOnMobile();
         }
 
-        function showAdminSection(sectionId, headerTitle) {
-            document.getElementById('headerTitle').innerText = headerTitle;
-            document.querySelectorAll('.admin-section').forEach(el => el.style.display = 'none');
-            document.getElementById(`admin-section-${sectionId}`).style.display = 'block';
-            
-            // Highlight active button
-            document.querySelectorAll('#adminToolsNavigation .nav-btn-custom').forEach(btn => btn.classList.remove('active'));
-            if(sectionId === 'live-load') document.getElementById('admin-btn-live').classList.add('active');
-            if(sectionId === 'users') document.getElementById('admin-btn-users').classList.add('active');
-            if(sectionId === 'activity') document.getElementById('admin-btn-activity').classList.add('active');
-
-            // Trigger Data Loads
-            if(sectionId === 'users') loadUsers();
-            if(sectionId === 'activity') loadActivityLogs();
-
-            closeSidebarOnMobile();
-        }
-
-        // =======================================================
-        // 5. AUTHENTICATION LOGIC
-        // =======================================================
+        // Auth & Modals
         let isAdmin = false;
         let currentUser = "{{ user_name }}";
+        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+        const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+
+        function openCreateUserModal() { registerModal.show(); }
 
         async function checkAuthStatus() {
             try {
@@ -1245,172 +1254,80 @@
                 isAdmin = data.is_admin;
                 currentUser = data.user_name;
                 updateAdminUI();
-            } catch(e) { console.error("Auth check failed", e); }
+            } catch(e) {}
         }
 
         function updateAdminUI() {
-            const userNav = document.getElementById('userToolsNavigation');
-            const adminNav = document.getElementById('adminToolsNavigation');
-            const userContainer = document.getElementById('user-view-container');
-            const adminContainer = document.getElementById('admin-view-container');
             const authContainer = document.getElementById('authContainer');
-            const adminStats = document.getElementById('adminStats');
-
-            // Render Auth Button/Profile based on login status
             if (currentUser) {
-                 authContainer.innerHTML = `
-                    <div class="admin-profile-card">
-                        <div class="admin-info">
-                            <div class="admin-avatar">${currentUser.charAt(0)}</div>
-                            <div class="admin-text"><h6>${currentUser}</h6><small>Online</small></div>
-                        </div>
-                        <button onclick="logout()" class="btn-logout" title="Sign Out">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>`;
+                 authContainer.innerHTML = `<div class="admin-profile-card"><div class="admin-info"><div class="admin-avatar">${currentUser.charAt(0)}</div><div class="admin-text"><h6>${currentUser}</h6><small>Online</small></div></div><button onclick="logout()" class="btn-logout" title="Sign Out"><i class="fas fa-sign-out-alt"></i></button></div>`;
             } else {
-                authContainer.innerHTML = `
-                    <button class="btn-login-sidebar" data-bs-toggle="modal" data-bs-target="#loginModal">
-                        <i class="fas fa-lock"></i> Admin Login
-                    </button>`;
+                authContainer.innerHTML = `<button class="btn-login-sidebar" onclick="loginModal.show()"><i class="fas fa-lock"></i> Admin Login</button>`;
             }
 
             if (isAdmin) {
-                // Show Admin View
-                userNav.style.display = 'none';
-                adminNav.style.display = 'block';
-                userContainer.style.display = 'none';
-                adminContainer.style.display = 'block';
-                if(adminStats) adminStats.style.display = 'block';
-                
+                document.getElementById('userToolsNavigation').style.display = 'none';
+                document.getElementById('adminToolsNavigation').style.display = 'block';
+                document.getElementById('user-view-container').style.display = 'none';
+                document.getElementById('admin-view-container').style.display = 'block';
+                document.getElementById('adminStats').style.display = 'block';
                 showAdminSection('live-load', 'System Monitor');
             } else {
-                // Show User View
-                userNav.style.display = 'block';
-                adminNav.style.display = 'none';
-                userContainer.style.display = 'block';
-                adminContainer.style.display = 'none';
-                if(adminStats) adminStats.style.display = 'none';
-                
+                document.getElementById('userToolsNavigation').style.display = 'block';
+                document.getElementById('adminToolsNavigation').style.display = 'none';
+                document.getElementById('user-view-container').style.display = 'block';
+                document.getElementById('admin-view-container').style.display = 'none';
+                document.getElementById('adminStats').style.display = 'none';
                 showUserSection('home', 'Dashboard');
             }
         }
 
-        async function logout() {
-            await fetch('/logout', { method: 'POST' });
-            window.location.href = "/login-page"; // Redirect to login page
-        }
+        async function logout() { await fetch('/logout', { method: 'POST' }); window.location.href = "/login-page"; }
 
+        // Login Handler
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const u = document.getElementById('usernameInput').value;
             const p = document.getElementById('passwordInput').value;
-            
             try {
-                const res = await fetch('/login', { 
+                const res = await fetch('/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username: u, password: p, role: 'admin'}) });
+                const data = await res.json();
+                if (data.success) location.reload();
+                else document.getElementById('loginAlert').classList.remove('d-none');
+            } catch(e) {}
+        });
+
+        // Register Handler
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const u = document.getElementById('regUsername').value;
+            const p = document.getElementById('regPassword').value;
+            const f = document.getElementById('regFullname').value;
+            const d = document.getElementById('regDept').value;
+            
+            const btn = this.querySelector('button'); btn.disabled = true; btn.innerHTML = 'Creating...';
+            try {
+                const res = await fetch('/register', { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({username: u, password: p, role: 'admin'}) 
+                    body: JSON.stringify({username: u, password: p, full_name: f, department: d}) 
                 });
                 const data = await res.json();
-                
                 if (data.success) {
-                    location.reload(); // Reload to apply admin changes
+                    document.getElementById('registerSuccess').classList.remove('d-none');
+                    document.getElementById('registerAlert').classList.add('d-none');
+                    setTimeout(() => { registerModal.hide(); loadUsers(); }, 1500);
                 } else {
-                    document.getElementById('loginAlert').classList.remove('d-none');
+                    document.getElementById('registerAlert').innerText = data.error;
+                    document.getElementById('registerAlert').classList.remove('d-none');
                 }
-            } catch(e) {}
+            } catch(e) { document.getElementById('registerAlert').classList.remove('d-none'); } 
+            finally { btn.disabled = false; btn.innerHTML = 'Create Account'; }
         });
 
         checkAuthStatus();
 
-        // =======================================================
-        // 6. CHARTS & STATS
-        // =======================================================
-        Chart.register(ChartDataLabels);
-        
-        // System Load Chart
-        const ctxSystem = document.getElementById('systemChart').getContext('2d');
-        const systemChart = new Chart(ctxSystem, { 
-            type: 'line', 
-            data: { 
-                labels: Array(20).fill(''), 
-                datasets: [{ 
-                    label: 'Load', 
-                    data: Array(20).fill(0), 
-                    borderColor: '#0984e3', 
-                    backgroundColor: 'rgba(9, 132, 227, 0.05)', 
-                    borderWidth: 2, 
-                    fill: true, 
-                    pointRadius: 0, 
-                    tension: 0.4 
-                }] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                animation: { duration: 0 }, 
-                plugins: { legend: { display: false }, datalabels: { display: false } }, 
-                scales: { y: { beginAtZero: true, max: 100, grid: { display: true, borderDash: [5, 5] } }, x: { grid: { display: false } } } 
-            } 
-        });
-
-        // Feature Usage Chart
-        const ctxModel = document.getElementById('modelChart').getContext('2d');
-        const modelChart = new Chart(ctxModel, { 
-            type: 'doughnut', 
-            data: { 
-                labels: ['Text', 'Audio', 'Code', 'Quiz', 'Chat'], 
-                datasets: [{ 
-                    data: [1, 1, 1, 1, 1], 
-                    backgroundColor: ['#0984e3', '#74b9ff', '#00cec9', '#a29bfe', '#dfe6e9'], 
-                    borderWidth: 0 
-                }] 
-            }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                cutout: '70%', 
-                plugins: { legend: { position: 'bottom' }, datalabels: { display: false } } 
-            } 
-        });
-
-        // Stats Loop
-        async function updateStats() {
-            try {
-                const response = await fetch('/api/stats');
-                const data = await response.json();
-                
-                if (isAdmin) {
-                    systemChart.data.datasets[0].data.push(data.cpu || 0);
-                    systemChart.data.datasets[0].data.shift();
-                    systemChart.update();
-                    
-                    const cpuText = document.getElementById('cpu-load-text');
-                    const cpuBar = document.getElementById('cpu-bar');
-                    if(cpuText) cpuText.innerText = (data.cpu || 0) + '%';
-                    if(cpuBar) cpuBar.style.width = (data.cpu || 0) + '%';
-                }
-                
-                if (data.usage) {
-                    modelChart.data.datasets[0].data = [
-                        data.usage.text_gen, 
-                        data.usage.audio_gen, 
-                        data.usage.code_review, 
-                        data.usage.quiz_gen, 
-                        data.usage.chat_msgs || 0
-                    ];
-                    modelChart.update();
-                }
-            } catch (e) { }
-        }
-        setInterval(updateStats, 2000);
-
-        // =======================================================
-        // 7. NEW DATA LOADING FUNCTIONS
-        // =======================================================
-        
-        // Load Users Table
+        // Data Loading
         async function loadUsers() {
             const tbody = document.getElementById('usersTableBody');
             if (!tbody) return;
@@ -1419,21 +1336,12 @@
                 const users = await res.json();
                 let html = '';
                 users.forEach(u => {
-                    html += `
-                    <tr>
-                        <td>#${u.id}</td>
-                        <td class="fw-bold">${u.username}</td>
-                        <td>${u.last_seen}</td>
-                        <td><span class="badge bg-primary rounded-pill">${u.action_count}</span></td>
-                    </tr>`;
+                    html += `<tr><td>#${u.id}</td><td class="fw-bold">${u.username}</td><td>${u.full_name}</td><td>${u.department}</td><td>${u.last_seen}</td><td><span class="badge bg-primary rounded-pill">${u.action_count}</span></td></tr>`;
                 });
-                tbody.innerHTML = html || '<tr><td colspan="4" class="text-center text-muted">No registered users found.</td></tr>';
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading user data.</td></tr>';
-            }
+                tbody.innerHTML = html || '<tr><td colspan="6" class="text-center text-muted">No registered users found.</td></tr>';
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading user data.</td></tr>'; }
         }
 
-        // Load Activity Logs Table
         async function loadActivityLogs() {
             const tbody = document.getElementById('activityTableBody');
             if (!tbody) return;
@@ -1442,160 +1350,85 @@
                 const logs = await res.json();
                 let html = '';
                 logs.forEach(l => {
-                    html += `
-                    <tr>
-                        <td style="font-size: 0.85rem; color: #636e72;">${l.date}</td>
-                        <td><span class="fw-bold text-primary">${l.user}</span></td>
-                        <td><span class="badge bg-light text-dark border">${l.action}</span></td>
-                        <td style="font-size: 0.85rem;">${l.details}</td>
-                    </tr>`;
+                    html += `<tr><td>${l.date}</td><td class="fw-bold text-primary">${l.user}</td><td><span class="badge bg-light text-dark border">${l.action}</span></td><td>${l.details}</td></tr>`;
                 });
                 tbody.innerHTML = html || '<tr><td colspan="4" class="text-center text-muted">No activity found.</td></tr>';
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading logs.</td></tr>';
-            }
+            } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading logs.</td></tr>'; }
         }
 
-        function downloadReportAction() {
-            window.location.href = '/download-report';
-        }
+        function downloadReportAction() { window.location.href = '/download-report'; }
 
-        // =======================================================
-        // 8. FORM HANDLING
-        // =======================================================
+        // Charts
+        Chart.register(ChartDataLabels);
+        const ctxSystem = document.getElementById('systemChart').getContext('2d');
+        const systemChart = new Chart(ctxSystem, { type: 'line', data: { labels: Array(20).fill(''), datasets: [{ label: 'Load', data: Array(20).fill(0), borderColor: '#0984e3', backgroundColor: 'rgba(9, 132, 227, 0.05)', borderWidth: 2, fill: true, pointRadius: 0, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, animation: { duration: 0 }, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 }, x: { display: false } } } });
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                if (isAdmin) {
+                    systemChart.data.datasets[0].data.push(data.cpu || 0);
+                    systemChart.data.datasets[0].data.shift();
+                    systemChart.update();
+                    document.getElementById('cpu-load-text').innerText = (data.cpu || 0) + '%';
+                    document.getElementById('cpu-bar').style.width = (data.cpu || 0) + '%';
+                }
+            } catch (e) { }
+        }
+        setInterval(updateStats, 2000);
+
+        // Forms Handler
         async function handleForm(formId, url, outputId) {
             const formElement = document.getElementById(formId);
             if (!formElement) return;
-
             formElement.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                
-                // Specific logic for PDF
                 if(formId === 'textToPdfForm') document.getElementById('hiddenHtmlInput').value = quill.root.innerHTML;
-                
                 const btn = this.querySelector('button[type="submit"]'); 
                 const originalBtnText = btn.innerHTML;
                 const output = document.getElementById(outputId);
-                
-                // Loading State
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...'; 
-                btn.disabled = true;
-                output.innerHTML = ""; 
-
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...'; btn.disabled = true; output.innerHTML = ""; 
                 const formData = new FormData(this);
-                
                 try {
                     const res = await fetch(url, { method: 'POST', body: formData }); 
                     const data = await res.json(); 
-                    
                     if(data.success) {
                         let contentHtml = '';
-                        
-                        // Handle File Downloads
                         if(data.file_url) {
                             if (url.includes('text-to-audio') || url.includes('video-to-audio')) {
-                                contentHtml += `
-                                <div class="alert alert-success border-0 shadow-sm mb-3">
-                                    <h6 class="alert-heading fw-bold mb-2"><i class="fas fa-music me-2"></i>Audio Ready</h6>
-                                    <audio controls autoplay style="width: 100%;">
-                                        <source src="${data.file_url}" type="audio/mpeg">
-                                    </audio>
-                                    <div class="mt-2 text-end">
-                                        <a href="${data.file_url}" download class="btn btn-sm btn-outline-success">Download</a>
-                                    </div>
-                                </div>`;
+                                contentHtml += `<div class="alert alert-success border-0 shadow-sm mb-3"><h6 class="alert-heading fw-bold mb-2"><i class="fas fa-music me-2"></i>Audio Ready</h6><audio controls autoplay style="width: 100%;"><source src="${data.file_url}" type="audio/mpeg"></audio><div class="mt-2 text-end"><a href="${data.file_url}" download class="btn btn-sm btn-outline-success">Download</a></div></div>`;
                             } else {
-                                contentHtml += `
-                                <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-3">
-                                    <i class="fas fa-check-circle me-3 fs-4"></i>
-                                    <div>
-                                        <h6 class="mb-1 fw-bold">Success!</h6>
-                                        <a href="${data.file_url}" download class="text-decoration-none stretched-link">Download your file</a>
-                                    </div>
-                                </div>`;
+                                contentHtml += `<div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-3"><i class="fas fa-check-circle me-3 fs-4"></i><div><h6 class="mb-1 fw-bold">Success!</h6><a href="${data.file_url}" download class="text-decoration-none stretched-link">Download File</a></div></div>`;
                             }
                         }
-                        
-                        // Handle Text/HTML Content
                         const rawContent = data.quiz || data.minutes || data.email_content || data.review || data.text || data.translation;
-                        
                         if (rawContent) {
-                            if (data.quiz) {
-                                contentHtml += `<div class="result-box result-box-html bg-white border shadow-sm p-4">${rawContent}</div>`;
-                            } else {
-                                contentHtml += `<div class="result-box result-box-text">${marked.parse(rawContent)}</div>`;
-                            }
+                            if (data.quiz) contentHtml += `<div class="result-box result-box-html bg-white border shadow-sm p-4">${rawContent}</div>`;
+                            else contentHtml += `<div class="result-box result-box-text">${marked.parse(rawContent)}</div>`;
                         }
-
                         output.innerHTML = contentHtml;
-                    } else { 
-                        output.innerHTML = `<div class="alert alert-danger shadow-sm border-0"><i class="fas fa-exclamation-triangle me-2"></i>${data.error}</div>`; 
-                    }
-                } catch(err) { 
-                    output.innerHTML = `<div class="alert alert-danger">Connection Error: ${err.message}</div>`; 
-                } finally { 
-                    btn.innerHTML = originalBtnText; 
-                    btn.disabled = false; 
-                }
+                    } else output.innerHTML = `<div class="alert alert-danger shadow-sm border-0">${data.error}</div>`; 
+                } catch(err) { output.innerHTML = `<div class="alert alert-danger">${err.message}</div>`; } 
+                finally { btn.innerHTML = originalBtnText; btn.disabled = false; }
             });
         }
 
-        // Register all forms
-        const forms = [
-            ['textToAudioForm', '/text-to-audio', 'audioOutput'], 
-            ['audioToTextForm', '/audio-to-text', 'audioToTextOutput'],
-            ['makePptForm', '/make-ppt', 'pptOutput'], 
-            ['translateForm', '/translate', 'translateOutput'],
-            ['generateEmailForm', '/generate-email', 'emailOutput'], 
-            ['textToPdfForm', '/text-to-pdf', 'pdfOutput'],
-            ['minutesForm', '/generate-minutes', 'minutesOutput'], 
-            ['quizForm', '/generate-quiz', 'quizOutput'], 
-            ['codeForm', '/review-code', 'codeOutput'],
-            ['convertForm', '/convert-file', 'convertOutput'], 
-            ['compressForm', '/compress-image', 'compressOutput'],
-            ['vidAudioForm', '/video-to-audio', 'vidAudioOutput']
-        ];
+        const forms = [['textToAudioForm','/text-to-audio','audioOutput'],['audioToTextForm','/audio-to-text','audioToTextOutput'],['makePptForm','/make-ppt','pptOutput'],['translateForm','/translate','translateOutput'],['generateEmailForm','/generate-email','emailOutput'],['textToPdfForm','/text-to-pdf','pdfOutput'],['minutesForm','/generate-minutes','minutesOutput'],['quizForm','/generate-quiz','quizOutput'],['codeForm','/review-code','codeOutput'],['convertForm','/convert-file','convertOutput'],['compressForm','/compress-image','compressOutput'],['vidAudioForm','/video-to-audio','vidAudioOutput']];
         forms.forEach(f => handleForm(f[0], f[1], f[2]));
 
-        // =======================================================
-        // 9. CHAT LOGIC
-        // =======================================================
-        function toggleChat() { 
-            const w = document.getElementById('chatWindow'); 
-            const isFlex = w.style.display === 'flex';
-            w.style.display = isFlex ? 'none' : 'flex'; 
-            if(!isFlex) document.getElementById('chatInput').focus(); 
-        }
-
+        // Chat
+        function toggleChat() { const w = document.getElementById('chatWindow'); const isFlex = w.style.display === 'flex'; w.style.display = isFlex ? 'none' : 'flex'; if(!isFlex) document.getElementById('chatInput').focus(); }
         async function sendChat() {
-            const i = document.getElementById('chatInput'); 
-            const m = i.value.trim(); 
-            if(!m) return;
-            
-            const b = document.getElementById('chatBody'); 
-            b.innerHTML += `<div class="chat-msg chat-msg-user">${m}</div>`; 
-            i.value=''; 
-            b.scrollTop = b.scrollHeight;
-            
+            const i = document.getElementById('chatInput'); const m = i.value.trim(); if(!m) return;
+            const b = document.getElementById('chatBody'); b.innerHTML += `<div class="chat-msg chat-msg-user">${m}</div>`; i.value=''; b.scrollTop = b.scrollHeight;
             try { 
-                const res = await fetch('/chat', {method:'POST', body:new URLSearchParams({message:m})}); 
-                const d = await res.json(); 
-                
-                if (d.success) {
-                    b.innerHTML += `<div class="chat-msg chat-msg-ai">${marked.parse(d.response)}</div>`;
-                } else {
-                    b.innerHTML += `<div class="chat-msg chat-msg-ai text-danger">Error processing request</div>`;
-                }
-            } catch { 
-                b.innerHTML += `<div class="chat-msg chat-msg-ai text-danger">Server Offline</div>`; 
-            } 
-            b.scrollTop = b.scrollHeight;
+                const res = await fetch('/chat', {method:'POST', body:new URLSearchParams({message:m})}); const d = await res.json(); 
+                if (d.success) b.innerHTML += `<div class="chat-msg chat-msg-ai">${marked.parse(d.response)}</div>`;
+                else b.innerHTML += `<div class="chat-msg chat-msg-ai text-danger">Error</div>`;
+            } catch { b.innerHTML += `<div class="chat-msg chat-msg-ai text-danger">Server Offline</div>`; } b.scrollTop = b.scrollHeight;
         }
-
-        async function clearChatMemory() {
-            await fetch('/clear-chat', {method:'POST'});
-            document.getElementById('chatBody').innerHTML = '<div class="chat-msg chat-msg-ai">Memory cleared. How can I help?</div>';
-        }
+        async function clearChatMemory() { await fetch('/clear-chat', {method:'POST'}); document.getElementById('chatBody').innerHTML = '<div class="chat-msg chat-msg-ai">Memory cleared.</div>'; }
     </script>
 </body>
 </html>
