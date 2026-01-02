@@ -1,0 +1,13 @@
+Flask
+Flask-SQLAlchemy
+Werkzeug
+python-dotenv
+psutil
+groq
+gTTS
+xhtml2pdf
+python-pptx
+SpeechRecognition
+Pillow
+moviepy
+gunicorn

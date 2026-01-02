@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Workspace Enterprise</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Courgette&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* --- COLOR PALETTE (From Login Page) --- */
+            --primary-color: #0984e3; /* Vibrant Blue */
+            --primary-hover: #74b9ff;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+            --bg-body: #f8fafc;
+            --bg-sidebar: #ffffff;
+            
+            /* --- DIMENSIONS --- */
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            
+            /* --- UI ELEMENTS --- */
+            --radius-card: 16px;
+            --radius-btn: 12px; /* Matching login btn radius */
+            --shadow-subtle: 0 4px 15px rgba(0,0,0,0.03); /* Softer shadow like login */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif; /* Changed from Inter to Poppins */
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        /* =======================================================
+           SIDEBAR STYLING
+        ======================================================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            height: 100vh;
+            position: fixed;
+            left: 0; 
+            top: 0;
+            display: flex; 
+            flex-direction: column;
+            border-right: 1px solid #dfe6e9; /* Lighter border */
+            z-index: 1050;
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+        }
+
+        .brand {
+            height: var(--header-height);
+            display: flex; 
+            align-items: center;
+            padding: 0 1.5rem;
+            /* Branding Font from Login Page */
+            font-family: 'Courgette', cursive; 
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid #f1f2f6;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .nav-section { 
+            padding: 1.5rem 1rem; 
+            flex-grow: 1; 
+            overflow-y: auto; 
+        }
+
+        .nav-label { 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1.2px;
+            color: #b2bec3; 
+            font-weight: 600;
+            margin: 1.5rem 0 0.5rem 0.8rem;
+        }
+
+        .nav-btn-custom {
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-weight: 500;
+            padding: 0.85rem 1rem; /* Slightly larger padding */
+            margin-bottom: 6px;
+            border-radius: var(--radius-btn);
+            font-size: 0.95rem;
+            display: flex; 
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-btn-custom:hover { 
+            background-color: #f1f2f6; 
+            color: var(--primary-color); 
+            transform: translateX(4px); 
+        }
+
+        .nav-btn-custom.active { 
+            background-color: #e6f2ff; /* Very light blue bg */
+            color: var(--primary-color); 
+            font-weight: 600; 
+        }
+
+        .nav-btn-custom i { 
+            width: 24px; 
+            text-align: center; 
+            margin-right: 12px; 
+        }
+
+        /* --- SIDEBAR FOOTER (ADMIN) --- */
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #f1f2f6;
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .admin-profile-card {
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 12px; 
+            background: #f8fafc; 
+            border: 1px solid #dfe6e9;
+            border-radius: var(--radius-btn); 
+        }
+        
+        .admin-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+
+        .admin-avatar {
+            width: 40px; 
+            height: 40px; 
+            background: var(--primary-color); 
+            color: white;
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .admin-text h6 { 
+            margin: 0; 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            color: var(--text-dark);
+        }
+        
+        .admin-text small { 
+            font-size: 0.75rem; 
+            color: var(--text-light); 
+        }
+
+        .btn-logout {
+            border: none; 
+            background: #fff0f0; 
+            color: #d63031;
+            width: 36px; 
+            height: 36px; 
+            border-radius: 10px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-logout:hover { 
+            background: #ff7675; 
+            color: white;
+        }
+
+        .btn-login-sidebar {
+            width: 100%; 
+            background: white; 
+            border: 1px solid #dfe6e9;
+            color: var(--text-light); 
+            font-weight: 600; 
+            padding: 12px;
+            border-radius: var(--radius-btn); 
+            transition: 0.2s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .btn-login-sidebar:hover { 
+            background: var(--primary-color); 
+            color: white; 
+            border-color: var(--primary-color); 
+        }
+
+        /* =======================================================
+           MAIN CONTENT AREA
+        ======================================================== */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            height: 100vh;
+            overflow-y: auto;
+            display: flex; 
+            flex-direction: column;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .header-bar {
+            height: var(--header-height);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 0 2.5rem;
+            border-bottom: 1px solid #dfe6e9;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            position: sticky; 
+            top: 0; 
+            z-index: 900;
+            flex-shrink: 0;
+        }
+
+        .mobile-toggle { 
+            display: none; 
+            font-size: 1.5rem; 
+            color: var(--text-dark); 
+            cursor: pointer; 
+            margin-right: 15px; 
+        }
+
+        .content-area { 
+            padding: 2.5rem; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            width: 100%; 
+            flex-grow: 1;
+        }
+
+        /* =======================================================
+           WIDGETS & CARDS
+        ======================================================== */
+        .welcome-banner {
+            /* Updated Gradient to match Login Page Blue Theme */
+            background: linear-gradient(135deg, #0984e3 0%, #74b9ff 100%);
+            color: white; 
+            border-radius: var(--radius-card); 
+            padding: 3rem; 
+            margin-bottom: 2rem;
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 1rem;
+            box-shadow: 0 10px 30px -10px rgba(9, 132, 227, 0.4);
+        }
+        
+        .welcome-banner h2 {
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .card-box {
+            background: white; 
+            border: 1px solid #dfe6e9; 
+            border-radius: var(--radius-card);
+            padding: 2rem; 
+            box-shadow: var(--shadow-subtle); 
+            height: 100%;
+            transition: transform 0.2s;
+        }
+        
+        /* Optional: Hover effect for cards */
+        /* .card-box:hover { transform: translateY(-2px); } */
+
+        .showcase-carousel { 
+            background: #2d3436; 
+            border-radius: var(--radius-card); 
+            overflow: hidden; 
+            box-shadow: var(--shadow-subtle); 
+            border: none; 
+            height: 380px; 
+        }
+
+        .carousel-item { 
+            height: 380px; 
+            background-size: cover; 
+            background-position: center; 
+            position: relative; 
+        }
+
+        .carousel-caption-custom {
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0) 100%);
+            color: white; 
+            padding: 3rem 2.5rem; 
+            text-align: left;
+        }
+
+        .slide-icon { 
+            font-size: 3rem; 
+            margin-bottom: 1rem; 
+            color: rgba(255,255,255,0.95); 
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+        }
+
+        .carousel-caption-custom h3 { 
+            font-weight: 700; 
+            margin-bottom: 0.5rem; 
+            font-size: 1.8rem; 
+        }
+        
+        .carousel-caption-custom p { 
+            font-size: 1.05rem; 
+            opacity: 0.9; 
+            max-width: 700px; 
+        }
+
+        /* =======================================================
+           FORM ELEMENTS
+        ======================================================== */
+        .form-control, .form-select { 
+            background-color: #fff; 
+            border: 1px solid #dfe6e9; 
+            padding: 0.85rem 1rem; 
+            border-radius: var(--radius-btn); 
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        
+        .form-control:focus, .form-select:focus { 
+            background-color: white; 
+            border-color: var(--primary-color); 
+            box-shadow: 0 0 0 4px rgba(9, 132, 227, 0.1); 
+        }
+        
+        .form-label {
+            color: var(--text-dark);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { 
+            background-color: var(--primary-color); 
+            border: none; 
+            padding: 0.85rem 2rem; 
+            border-radius: var(--radius-btn); 
+            font-weight: 600; 
+            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.25);
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover { 
+            background-color: #0077d6; /* Slightly darker blue */
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(9, 132, 227, 0.35);
+        }
+
+        /* =======================================================
+           OUTPUT BOX & QUIZ FORMATTING
+        ======================================================== */
+        .result-box {
+            background-color: #f1f2f6;
+            border-left: 4px solid var(--primary-color);
+            padding: 2rem;
+            margin-top: 2rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            line-height: 1.7;
+            color: var(--text-dark);
+        }
+        
+        .result-box h1, .result-box h2, .result-box h3 { 
+            margin-top: 1.5rem; 
+            font-weight: 700; 
+            color: var(--text-dark);
+        }
+        
+        .result-box pre { 
+            background: #2d3436; 
+            color: #dfe6e9; 
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            overflow-x: auto; 
+        }
+        
+        .result-box code { 
+            font-family: 'Consolas', monospace; 
+            color: #e84393; 
+        }
+
+        /* --- QUIZ SPECIFIC STYLES (Fixed Alignment) --- */
+        .result-box .question-box {
+            background: #ffffff;
+            border: 1px solid #dfe6e9;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .result-box .q-title {
+            color: var(--primary-color);
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
+            padding-bottom: 12px;
+        }
+
+        .result-box .options-list {
+            list-style-type: none; /* Remove default bullets */
+            padding-left: 0;
+        }
+
+        .result-box .options-list li {
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            background-color: #f8fafc;
+            border: 1px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .result-box .options-list li:hover {
+            background-color: #e6f2ff;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* Quiz Answer Key Table */
+        .result-box table.answer-key {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #dfe6e9;
+        }
+
+        .result-box table.answer-key th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .result-box table.answer-key td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f2f6;
+            color: var(--text-dark);
+        }
+
+        /* =======================================================
+           CHAT WIDGET
+        ======================================================== */
+        .floating-chat-btn { 
+            position: fixed; 
+            bottom: 40px; 
+            right: 40px; 
+            width: 65px; 
+            height: 65px; 
+            background: var(--primary-color); 
+            color: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 26px; 
+            cursor: pointer; 
+            z-index: 2000; 
+            box-shadow: 0 10px 30px rgba(9, 132, 227, 0.4); 
+            transition: transform 0.2s; 
+        }
+        
+        .floating-chat-btn:hover { 
+            transform: scale(1.1); 
+        }
+        
+        .chat-window { 
+            position: fixed; 
+            bottom: 120px; 
+            right: 40px; 
+            width: 380px; 
+            height: 550px; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1); 
+            display: none; 
+            flex-direction: column; 
+            z-index: 2000; 
+            overflow: hidden; 
+            border: 1px solid #dfe6e9; 
+        }
+        
+        .chat-header { 
+            background: var(--primary-color); 
+            color: white; 
+            padding: 18px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-weight: 600; 
+            font-size: 1.05rem;
+        }
+        
+        .chat-body { 
+            flex-grow: 1; 
+            padding: 20px; 
+            background: #f8fafc; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+        }
+        
+        .chat-msg { 
+            max-width: 80%; 
+            padding: 12px 16px; 
+            border-radius: 16px; 
+            font-size: 0.95rem; 
+            line-height: 1.5;
+        }
+        
+        .chat-msg-ai { 
+            background: white; 
+            border: 1px solid #dfe6e9; 
+            border-bottom-left-radius: 4px; 
+            color: var(--text-dark);
+        }
+        
+        .chat-msg-user { 
+            background: var(--primary-color); 
+            color: white; 
+            align-self: flex-end; 
+            border-bottom-right-radius: 4px; 
+        }
+        
+        .chat-footer { 
+            padding: 15px; 
+            background: white; 
+            border-top: 1px solid #dfe6e9; 
+            display: flex; 
+            gap: 10px; 
+        }
+
+        /* Editor Container */
+        #editor-container { 
+            height: 350px; 
+            background: white; 
+            border-radius: 0 0 12px 12px; 
+            border: 1px solid #dfe6e9; 
+            border-top: 0; 
+        }
+        
+        .ql-toolbar { 
+            border-radius: 12px 12px 0 0; 
+            border-color: #dfe6e9 !important; 
+            background: #f8fafc; 
+        }
+        
+        .ql-container { 
+            border-color: #dfe6e9 !important; 
+            font-family: 'Poppins', sans-serif; 
+        }
+
+        /* Footer */
+        .app-footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            border-top: 1px solid #dfe6e9;
+            margin-top: auto;
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.show { transform: translateX(0); box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            .main-content { margin-left: 0; }
+            .mobile-toggle { display: block; }
+            .mobile-brand { display: block; margin-right: 1rem; font-family: 'Courgette', cursive; font-size: 1.5rem; color: var(--primary-color); }
+            .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1040; }
+            .sidebar-overlay.show { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="brand" onclick="showUserSection('home', 'Dashboard')">
+            AI Workspace
+        </div>
+        
+        <div class="nav-section">
+            <div id="nav-container">
+                
+                <div id="userToolsNavigation">
+                    <div class="nav-label">Overview</div>
+                    <button class="nav-btn-custom active" id="btn-home" onclick="showUserSection('home', 'Dashboard')">
+                        <i class="fas fa-home me-2"></i> Dashboard
+                    </button>
+
+                    <div class="nav-label">Productivity</div>
+                    <button class="nav-btn-custom" onclick="showUserSection('minutes', 'Meeting Minutes')">
+                        <i class="fas fa-file-pen"></i> Minutes
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('ppt', 'Presentation Generator')">
+                        <i class="fas fa-desktop"></i> Slides
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('email', 'Email Drafter')">
+                        <i class="fas fa-envelope-open-text"></i> Email
+                    </button>
+                    
+                    <div class="nav-label">Analysis</div>
+                    <button class="nav-btn-custom" onclick="showUserSection('code', 'Code Reviewer')">
+                        <i class="fas fa-code"></i> Code
+                    </button>
+
+                    <div class="nav-label">Utilities</div>
+                    <button class="nav-btn-custom" onclick="showUserSection('quiz', 'Quiz Maker')">
+                        <i class="fas fa-graduation-cap"></i> Quiz
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('pdf', 'PDF Editor')">
+                        <i class="fas fa-file-pdf"></i> PDF Tools
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('voice', 'Text to Speech')">
+                        <i class="fas fa-volume-high"></i> TTS
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('transcribe', 'Audio Transcriber')">
+                        <i class="fas fa-microphone-lines"></i> Transcriber
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('translate', 'Translator')">
+                        <i class="fas fa-language"></i> Translate
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('convert', 'File Converter')">
+                        <i class="fas fa-repeat"></i> Converter
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('compress', 'Image Compressor')">
+                        <i class="fas fa-compress"></i> Compress
+                    </button>
+                    <button class="nav-btn-custom" onclick="showUserSection('vidaudio', 'Video to Audio')">
+                        <i class="fas fa-music"></i> Video to MP3
+                    </button>
+                </div>
+
+                <div id="adminToolsNavigation" style="display:none;">
+                    <div class="nav-label">Admin Controls</div>
+                    
+                    <button class="nav-btn-custom active" id="admin-btn-live" onclick="showAdminSection('live-load', 'System Monitor')">
+                        <i class="fas fa-server"></i> Live System Load
+                    </button>
+                    
+                    <button class="nav-btn-custom" id="admin-btn-users" onclick="showAdminSection('users', 'User Management')">
+                        <i class="fas fa-users"></i> Users
+                    </button>
+
+                    <button class="nav-btn-custom" id="admin-btn-activity" onclick="showAdminSection('activity', 'User Activity')">
+                        <i class="fas fa-list-ul"></i> User Activity
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            
+            <div id="adminStats" class="mb-3" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-xs fw-bold text-muted" style="font-size:10px;">SERVER LOAD</span>
+                    <span class="text-xs fw-bold text-dark" id="cpu-load-text" style="font-size:10px;">0%</span>
+                </div>
+                <div class="progress" style="height: 4px; border-radius: 2px;">
+                    <div class="progress-bar bg-primary" id="cpu-bar" style="width: 0%; background-color: var(--primary-color)!important;"></div>
+                </div>
+                <hr class="my-3 opacity-25">
+            </div>
+
+            <div id="authContainer">
+                </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header-bar">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-bars mobile-toggle" onclick="toggleSidebar()"></i>
+                <div class="mobile-brand me-3" style="display:none;">AI Workspace</div>
+                <h5 class="mb-0 fw-bold" style="color: var(--text-dark);" id="headerTitle">Dashboard</h5>
+            </div>
+            <div>
+                <span class="badge bg-white text-secondary border px-3 py-2 rounded-pill fw-normal shadow-sm" id="currentDate" style="color: var(--text-light)!important;">Loading...</span>
+            </div>
+        </header>
+
+        <div class="content-area">
+            
+            <div id="user-view-container">
+                
+                <div id="user-section-home" class="user-section">
+                    <div class="welcome-banner">
+                        <div>
+                            <h2 class="mb-1">Hello, {{ user_name }}</h2>
+                            <p class="mb-0 opacity-75">Welcome to your AI-powered workspace.</p>
+                        </div>
+                    </div>
+
+                    <div id="featureCarousel" class="carousel slide showcase-carousel mb-4" data-bs-ride="carousel" data-bs-interval="5000">
+                        <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#featureCarousel" data-bs-slide-to="0" class="active"></button>
+                            <button type="button" data-bs-target="#featureCarousel" data-bs-slide-to="1"></button>
+                        </div>
+                        <div class="carousel-inner">
+                            <div class="carousel-item active" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80');">
+                                <div class="carousel-caption-custom">
+                                    <div class="slide-icon"><i class="fas fa-file-signature"></i></div>
+                                    <h3>Smart Meeting Minutes</h3>
+                                    <p>Transform messy notes into structured summaries instantly.</p>
+                                </div>
+                            </div>
+                            <div class="carousel-item" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80');">
+                                <div class="carousel-caption-custom">
+                                    <div class="slide-icon"><i class="fas fa-language"></i></div>
+                                    <h3>Global Translator</h3>
+                                    <p>Break language barriers with accurate translation.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="user-section-minutes" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Meeting Minutes</h4>
+                        <form id="minutesForm">
+                            <div class="mb-3">
+                                <textarea class="form-control" name="notes" rows="8" placeholder="Paste messy notes here..."></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Generate Minutes</button>
+                            </div>
+                        </form>
+                        <div id="minutesOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-ppt" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Presentation Generator</h4>
+                        <form id="makePptForm">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">Topic</label>
+                                    <input type="text" class="form-control" name="topic" placeholder="e.g. Q4 Sales Strategy">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Template (Optional)</label>
+                                    <input type="file" class="form-control" name="template_file" accept=".pptx">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Context / Source Text</label>
+                                <textarea class="form-control" name="source_text" rows="4" placeholder="Paste relevant content to include in slides..."></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Create Slides</button>
+                            </div>
+                        </form>
+                        <div id="pptOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-email" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Email Drafter</h4>
+                        <form id="generateEmailForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">To (Name/Team)</label>
+                                    <input type="text" class="form-control" name="recipient">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Topic / Subject</label>
+                                    <input type="text" class="form-control" name="topic">
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Draft Email</button>
+                            </div>
+                        </form>
+                        <div id="emailOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-code" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Code Reviewer</h4>
+                        <form id="codeForm">
+                            <div class="mb-3">
+                                <textarea class="form-control" name="code" rows="10" style="font-family:'Consolas',monospace;background:#282c34;color:#abb2bf;" placeholder="// Paste your code here..."></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Review Code</button>
+                            </div>
+                        </form>
+                        <div id="codeOutput" class="mt-4"></div>
+                    </div>
+                </div>
+                
+                <div id="user-section-quiz" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Quiz Maker</h4>
+                        <form id="quizForm">
+                            <div class="mb-3">
+                                <label class="form-label">Number of Questions</label>
+                                <input type="number" class="form-control" name="count" value="5">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Topic</label>
+                                <textarea class="form-control" name="topic" rows="3" placeholder="e.g. Python Basics, History of Rome"></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Generate Quiz</button>
+                            </div>
+                        </form>
+                        <div id="quizOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-pdf" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="fw-bold m-0" style="color: var(--text-dark);">Document Editor</h4>
+                        </div>
+                        <form id="textToPdfForm">
+                            <div id="editor-container"></div>
+                            <input type="hidden" name="html_content" id="hiddenHtmlInput">
+                            <div class="text-end mt-3">
+                                <button type="submit" class="btn btn-primary">Download PDF</button>
+                            </div>
+                        </form>
+                        <div id="pdfOutput" class="mt-4"></div>
+                    </div>
+                </div>
+                
+                <div id="user-section-voice" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Text to Speech</h4>
+                        <form id="textToAudioForm">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Select Language</label>
+                                    <select class="form-select voice-list" name="target_language"></select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" name="text" rows="4" placeholder="Enter text here..."></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Generate Audio</button>
+                            </div>
+                        </form>
+                        <div id="audioOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-transcribe" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Audio Transcriber</h4>
+                        <form id="audioToTextForm">
+                            <div class="mb-3">
+                                <label class="form-label">Audio Language</label>
+                                <select class="form-select" id="speechLangSelect" name="language"></select>
+                            </div>
+                            <div class="mb-3">
+                                <input type="file" class="form-control" name="file" accept=".wav,.mp3">
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Transcribe</button>
+                            </div>
+                        </form>
+                        <div id="audioToTextOutput" class="mt-4"></div>
+                    </div>
+                </div>
+                
+                <div id="user-section-translate" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Translator</h4>
+                        <form id="translateForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">From</label>
+                                    <select class="form-select language-list-auto" name="source_language"></select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">To</label>
+                                    <select class="form-select language-list" name="target_language"></select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" name="text" rows="4" placeholder="Text to translate..."></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Translate</button>
+                            </div>
+                        </form>
+                        <div id="translateOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-convert" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Converter</h4>
+                        <form id="convertForm">
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <input type="file" class="form-control" name="file" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" name="format">
+                                        <option value="PNG">PNG</option>
+                                        <option value="JPG">JPG</option>
+                                        <option value="PDF">PDF</option>
+                                        <option value="WEBP">WEBP</option>
+                                        <option value="ICO">ICO</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Convert</button>
+                            </div>
+                        </form>
+                        <div id="convertOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-compress" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Compressor</h4>
+                        <form id="compressForm">
+                            <div class="mb-3">
+                                <input type="file" class="form-control" name="file" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Target Size (KB)</label>
+                                <input type="number" class="form-control" name="target_kb" value="500">
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Compress</button>
+                            </div>
+                        </form>
+                        <div id="compressOutput" class="mt-4"></div>
+                    </div>
+                </div>
+
+                <div id="user-section-vidaudio" class="user-section" style="display:none;">
+                    <div class="card-box">
+                        <h4 class="fw-bold mb-4" style="color: var(--text-dark);">Video to Audio</h4>
+                        <form id="vidAudioForm">
+                            <div class="mb-3">
+                                <input type="file" class="form-control" name="file" accept="video/*" required>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Extract</button>
+                            </div>
+                        </form>
+                        <div id="vidAudioOutput" class="mt-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-view-container" style="display:none;">
+                <div class="welcome-banner mb-4">
+                    <div>
+                        <h2 class="mb-1">Administrator</h2>
+                        <p class="mb-0 opacity-75">System Overview & Management</p>
+                    </div>
+                </div>
+
+                <div id="admin-section-live-load" class="admin-section">
+                    <div class="card-box">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="fw-bold mb-0" style="color: var(--text-dark);">Live CPU/RAM Load</h6>
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Monitoring Active</span>
+                        </div>
+                        <div style="height: 400px;">
+                            <canvas id="systemChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-section-users" class="admin-section" style="display:none;">
+                    <div class="card-box">
+                        <h6 class="fw-bold mb-4" style="color: var(--text-dark);">User Management</h6>
+                        <div class="table-responsive">
+                            <table class="table table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Last Active</th>
+                                        <th>Total Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr><td colspan="4" class="text-center text-muted py-3">Loading users...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-section-activity" class="admin-section" style="display:none;">
+                    <div class="card-box">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="fw-bold mb-0" style="color: var(--text-dark);">User Activity Logs</h6>
+                            <button onclick="downloadReportAction()" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download me-2"></i>Download Report
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activityTableBody">
+                                    <tr><td colspan="4" class="text-center text-muted py-3">Loading logs...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="admin-section-feature-usage" class="admin-section" style="display:none;">
+                    <div class="card-box">
+                        <h6 class="fw-bold mb-4" style="color: var(--text-dark);">AI Feature Usage Distribution</h6>
+                        <div style="height: 400px; display:flex; justify-content:center;">
+                            <canvas id="modelChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <footer class="app-footer">
+            Powered by <strong>AI Workspace Enterprise</strong> &copy; 2026
+        </footer>
+    </main>
+
+    <div class="floating-chat-btn" onclick="toggleChat()">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span>AI Assistant</span>
+            <div>
+                <button class="btn btn-sm text-white" onclick="clearChatMemory()" title="Clear Chat">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="btn btn-sm text-white" onclick="toggleChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-msg chat-msg-ai">Hello! How can I help you today?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" class="form-control border-0 bg-light" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendChat()">
+            <button class="btn btn-primary rounded-circle shadow-sm" onclick="sendChat()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold ms-2 mt-2" style="color: var(--text-dark);">Admin Login</h5>
+            <button type="button" class="btn-close me-2 mt-2" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4 pt-3">
+            <div id="loginAlert" class="alert alert-danger d-none small py-2">Invalid credentials</div>
+            <form id="loginForm">
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">USERNAME</label>
+                <input type="text" class="form-control" id="usernameInput" required>
+              </div>
+              <div class="mb-4">
+                <label class="form-label small fw-bold text-muted">PASSWORD</label>
+                <input type="password" class="form-control" id="passwordInput" required>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 py-2">Access Dashboard</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        // =======================================================
+        // 1. INITIAL SETUP
+        // =======================================================
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+
+        // Initialize Quill Editor for PDF Tool
+        var quill = new Quill('#editor-container', { 
+            theme: 'snow', 
+            modules: { toolbar: [['bold', 'italic', 'underline'], [{'list':'ordered'}, {'list':'bullet'}], ['clean']] } 
+        });
+
+        // =======================================================
+        // 2. SIDEBAR LOGIC
+        // =======================================================
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function closeSidebarOnMobile() { 
+            if (window.innerWidth <= 991) toggleSidebar(); 
+        }
+
+        // =======================================================
+        // 3. LANGUAGE DROPDOWN POPULATION
+        // =======================================================
+        const globalLangs = [
+            {c:'en', n:'English'}, {c:'hi', n:'Hindi'}, {c:'ta', n:'Tamil'}, 
+            {c:'ml', n:'Malayalam'}, {c:'te', n:'Telugu'}, {c:'kn', n:'Kannada'},
+            {c:'es', n:'Spanish'}, {c:'fr', n:'French'}, {c:'de', n:'German'},
+            {c:'zh', n:'Chinese'}, {c:'ja', n:'Japanese'}, {c:'ru', n:'Russian'}
+        ];
+        
+        // Fill translation and voice dropdowns
+        document.querySelectorAll('.language-list, .language-list-auto, .voice-list').forEach(sel => {
+            sel.innerHTML = '';
+            if(sel.classList.contains('language-list-auto')) sel.add(new Option("Auto-detect", "Auto-detect"));
+            globalLangs.forEach(l => sel.add(new Option(l.n, l.c)));
+        });
+
+        // Fill Speech Recognition specific dropdown
+        const sl = document.getElementById('speechLangSelect');
+        if(sl) { 
+            sl.innerHTML = '';
+            const speechLanguages = [
+                {c: 'en-US', n: 'English (US)'}, {c: 'en-GB', n: 'English (UK)'}, {c: 'en-IN', n: 'English (India)'},
+                {c: 'hi-IN', n: 'Hindi'}, {c: 'ta-IN', n: 'Tamil'}, {c: 'te-IN', n: 'Telugu'},
+                {c: 'kn-IN', n: 'Kannada'}, {c: 'ml-IN', n: 'Malayalam'}, {c: 'es-ES', n: 'Spanish'},
+                {c: 'fr-FR', n: 'French'}, {c: 'de-DE', n: 'German'}
+            ];
+            speechLanguages.forEach(x => sl.add(new Option(x.n, x.c))); 
+        }
+
+        // =======================================================
+        // 4. NAVIGATION LOGIC (UPDATED)
+        // =======================================================
+        function showUserSection(sectionId, headerTitle) {
+            document.getElementById('headerTitle').innerText = headerTitle;
+            document.querySelectorAll('.user-section').forEach(el => el.style.display = 'none');
+            document.getElementById(`user-section-${sectionId}`).style.display = 'block';
+            
+            document.querySelectorAll('.nav-btn-custom').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`button[onclick*="'${sectionId}'"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+            
+            closeSidebarOnMobile();
+        }
+
+        function showAdminSection(sectionId, headerTitle) {
+            document.getElementById('headerTitle').innerText = headerTitle;
+            document.querySelectorAll('.admin-section').forEach(el => el.style.display = 'none');
+            document.getElementById(`admin-section-${sectionId}`).style.display = 'block';
+            
+            // Highlight active button
+            document.querySelectorAll('#adminToolsNavigation .nav-btn-custom').forEach(btn => btn.classList.remove('active'));
+            if(sectionId === 'live-load') document.getElementById('admin-btn-live').classList.add('active');
+            if(sectionId === 'users') document.getElementById('admin-btn-users').classList.add('active');
+            if(sectionId === 'activity') document.getElementById('admin-btn-activity').classList.add('active');
+
+            // Trigger Data Loads
+            if(sectionId === 'users') loadUsers();
+            if(sectionId === 'activity') loadActivityLogs();
+
+            closeSidebarOnMobile();
+        }
+
+        // =======================================================
+        // 5. AUTHENTICATION LOGIC
+        // =======================================================
+        let isAdmin = false;
+        let currentUser = "{{ user_name }}";
+
+        async function checkAuthStatus() {
+            try {
+                const res = await fetch('/check-auth');
+                const data = await res.json();
+                isAdmin = data.is_admin;
+                currentUser = data.user_name;
+                updateAdminUI();
+            } catch(e) { console.error("Auth check failed", e); }
+        }
+
+        function updateAdminUI() {
+            const userNav = document.getElementById('userToolsNavigation');
+            const adminNav = document.getElementById('adminToolsNavigation');
+            const userContainer = document.getElementById('user-view-container');
+            const adminContainer = document.getElementById('admin-view-container');
+            const authContainer = document.getElementById('authContainer');
+            const adminStats = document.getElementById('adminStats');
+
+            // Render Auth Button/Profile based on login status
+            if (currentUser) {
+                 authContainer.innerHTML = `
+                    <div class="admin-profile-card">
+                        <div class="admin-info">
+                            <div class="admin-avatar">${currentUser.charAt(0)}</div>
+                            <div class="admin-text"><h6>${currentUser}</h6><small>Online</small></div>
+                        </div>
+                        <button onclick="logout()" class="btn-logout" title="Sign Out">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>`;
+            } else {
+                authContainer.innerHTML = `
+                    <button class="btn-login-sidebar" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="fas fa-lock"></i> Admin Login
+                    </button>`;
+            }
+
+            if (isAdmin) {
+                // Show Admin View
+                userNav.style.display = 'none';
+                adminNav.style.display = 'block';
+                userContainer.style.display = 'none';
+                adminContainer.style.display = 'block';
+                if(adminStats) adminStats.style.display = 'block';
+                
+                showAdminSection('live-load', 'System Monitor');
+            } else {
+                // Show User View
+                userNav.style.display = 'block';
+                adminNav.style.display = 'none';
+                userContainer.style.display = 'block';
+                adminContainer.style.display = 'none';
+                if(adminStats) adminStats.style.display = 'none';
+                
+                showUserSection('home', 'Dashboard');
+            }
+        }
+
+        async function logout() {
+            await fetch('/logout', { method: 'POST' });
+            window.location.href = "/login-page"; // Redirect to login page
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const u = document.getElementById('usernameInput').value;
+            const p = document.getElementById('passwordInput').value;
+            
+            try {
+                const res = await fetch('/login', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({username: u, password: p, role: 'admin'}) 
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    location.reload(); // Reload to apply admin changes
+                } else {
+                    document.getElementById('loginAlert').classList.remove('d-none');
+                }
+            } catch(e) {}
+        });
+
+        checkAuthStatus();
+
+        // =======================================================
+        // 6. CHARTS & STATS
+        // =======================================================
+        Chart.register(ChartDataLabels);
+        
+        // System Load Chart
+        const ctxSystem = document.getElementById('systemChart').getContext('2d');
+        const systemChart = new Chart(ctxSystem, { 
+            type: 'line', 
+            data: { 
+                labels: Array(20).fill(''), 
+                datasets: [{ 
+                    label: 'Load', 
+                    data: Array(20).fill(0), 
+                    borderColor: '#0984e3', 
+                    backgroundColor: 'rgba(9, 132, 227, 0.05)', 
+                    borderWidth: 2, 
+                    fill: true, 
+                    pointRadius: 0, 
+                    tension: 0.4 
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                animation: { duration: 0 }, 
+                plugins: { legend: { display: false }, datalabels: { display: false } }, 
+                scales: { y: { beginAtZero: true, max: 100, grid: { display: true, borderDash: [5, 5] } }, x: { grid: { display: false } } } 
+            } 
+        });
+
+        // Feature Usage Chart
+        const ctxModel = document.getElementById('modelChart').getContext('2d');
+        const modelChart = new Chart(ctxModel, { 
+            type: 'doughnut', 
+            data: { 
+                labels: ['Text', 'Audio', 'Code', 'Quiz', 'Chat'], 
+                datasets: [{ 
+                    data: [1, 1, 1, 1, 1], 
+                    backgroundColor: ['#0984e3', '#74b9ff', '#00cec9', '#a29bfe', '#dfe6e9'], 
+                    borderWidth: 0 
+                }] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                cutout: '70%', 
+                plugins: { legend: { position: 'bottom' }, datalabels: { display: false } } 
+            } 
+        });
+
+        // Stats Loop
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (isAdmin) {
+                    systemChart.data.datasets[0].data.push(data.cpu || 0);
+                    systemChart.data.datasets[0].data.shift();
+                    systemChart.update();
+                    
+                    const cpuText = document.getElementById('cpu-load-text');
+                    const cpuBar = document.getElementById('cpu-bar');
+                    if(cpuText) cpuText.innerText = (data.cpu || 0) + '%';
+                    if(cpuBar) cpuBar.style.width = (data.cpu || 0) + '%';
+                }
+                
+                if (data.usage) {
+                    modelChart.data.datasets[0].data = [
+                        data.usage.text_gen, 
+                        data.usage.audio_gen, 
+                        data.usage.code_review, 
+                        data.usage.quiz_gen, 
+                        data.usage.chat_msgs || 0
+                    ];
+                    modelChart.update();
+                }
+            } catch (e) { }
+        }
+        setInterval(updateStats, 2000);
+
+        // =======================================================
+        // 7. NEW DATA LOADING FUNCTIONS
+        // =======================================================
+        
+        // Load Users Table
+        async function loadUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+            try {
+                const res = await fetch('/api/users');
+                const users = await res.json();
+                let html = '';
+                users.forEach(u => {
+                    html += `
+                    <tr>
+                        <td>#${u.id}</td>
+                        <td class="fw-bold">${u.username}</td>
+                        <td>${u.last_seen}</td>
+                        <td><span class="badge bg-primary rounded-pill">${u.action_count}</span></td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html || '<tr><td colspan="4" class="text-center text-muted">No registered users found.</td></tr>';
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading user data.</td></tr>';
+            }
+        }
+
+        // Load Activity Logs Table
+        async function loadActivityLogs() {
+            const tbody = document.getElementById('activityTableBody');
+            if (!tbody) return;
+            try {
+                const res = await fetch('/api/activity-logs');
+                const logs = await res.json();
+                let html = '';
+                logs.forEach(l => {
+                    html += `
+                    <tr>
+                        <td style="font-size: 0.85rem; color: #636e72;">${l.date}</td>
+                        <td><span class="fw-bold text-primary">${l.user}</span></td>
+                        <td><span class="badge bg-light text-dark border">${l.action}</span></td>
+                        <td style="font-size: 0.85rem;">${l.details}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html || '<tr><td colspan="4" class="text-center text-muted">No activity found.</td></tr>';
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading logs.</td></tr>';
+            }
+        }
+
+        function downloadReportAction() {
+            window.location.href = '/download-report';
+        }
+
+        // =======================================================
+        // 8. FORM HANDLING
+        // =======================================================
+        async function handleForm(formId, url, outputId) {
+            const formElement = document.getElementById(formId);
+            if (!formElement) return;
+
+            formElement.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Specific logic for PDF
+                if(formId === 'textToPdfForm') document.getElementById('hiddenHtmlInput').value = quill.root.innerHTML;
+                
+                const btn = this.querySelector('button[type="submit"]'); 
+                const originalBtnText = btn.innerHTML;
+                const output = document.getElementById(outputId);
+                
+                // Loading State
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...'; 
+                btn.disabled = true;
+                output.innerHTML = ""; 
+
+                const formData = new FormData(this);
+                
+                try {
+                    const res = await fetch(url, { method: 'POST', body: formData }); 
+                    const data = await res.json(); 
+                    
+                    if(data.success) {
+                        let contentHtml = '';
+                        
+                        // Handle File Downloads
+                        if(data.file_url) {
+                            if (url.includes('text-to-audio') || url.includes('video-to-audio')) {
+                                contentHtml += `
+                                <div class="alert alert-success border-0 shadow-sm mb-3">
+                                    <h6 class="alert-heading fw-bold mb-2"><i class="fas fa-music me-2"></i>Audio Ready</h6>
+                                    <audio controls autoplay style="width: 100%;">
+                                        <source src="${data.file_url}" type="audio/mpeg">
+                                    </audio>
+                                    <div class="mt-2 text-end">
+                                        <a href="${data.file_url}" download class="btn btn-sm btn-outline-success">Download</a>
+                                    </div>
+                                </div>`;
+                            } else {
+                                contentHtml += `
+                                <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-3">
+                                    <i class="fas fa-check-circle me-3 fs-4"></i>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">Success!</h6>
+                                        <a href="${data.file_url}" download class="text-decoration-none stretched-link">Download your file</a>
+                                    </div>
+                                </div>`;
+                            }
+                        }
+                        
+                        // Handle Text/HTML Content
+                        const rawContent = data.quiz || data.minutes || data.email_content || data.review || data.text || data.translation;
+                        
+                        if (rawContent) {
+                            if (data.quiz) {
+                                contentHtml += `<div class="result-box result-box-html bg-white border shadow-sm p-4">${rawContent}</div>`;
+                            } else {
+                                contentHtml += `<div class="result-box result-box-text">${marked.parse(rawContent)}</div>`;
+                            }
+                        }
+
+                        output.innerHTML = contentHtml;
+                    } else { 
+                        output.innerHTML = `<div class="alert alert-danger shadow-sm border-0"><i class="fas fa-exclamation-triangle me-2"></i>${data.error}</div>`; 
+                    }
+                } catch(err) { 
+                    output.innerHTML = `<div class="alert alert-danger">Connection Error: ${err.message}</div>`; 
+                } finally { 
+                    btn.innerHTML = originalBtnText; 
+                    btn.disabled = false; 
+                }
+            });
+        }
+
+        // Register all forms
+        const forms = [
+            ['textToAudioForm', '/text-to-audio', 'audioOutput'], 
+            ['audioToTextForm', '/audio-to-text', 'audioToTextOutput'],
+            ['makePptForm', '/make-ppt', 'pptOutput'], 
+            ['translateForm', '/translate', 'translateOutput'],
+            ['generateEmailForm', '/generate-email', 'emailOutput'], 
+            ['textToPdfForm', '/text-to-pdf', 'pdfOutput'],
+            ['minutesForm', '/generate-minutes', 'minutesOutput'], 
+            ['quizForm', '/generate-quiz', 'quizOutput'], 
+            ['codeForm', '/review-code', 'codeOutput'],
+            ['convertForm', '/convert-file', 'convertOutput'], 
+            ['compressForm', '/compress-image', 'compressOutput'],
+            ['vidAudioForm', '/video-to-audio', 'vidAudioOutput']
+        ];
+        forms.forEach(f => handleForm(f[0], f[1], f[2]));
+
+        // =======================================================
+        // 9. CHAT LOGIC
+        // =======================================================
+        function toggleChat() { 
+            const w = document.getElementById('chatWindow'); 
+            const isFlex = w.style.display === 'flex';
+            w.style.display = isFlex ? 'none' : 'flex'; 
+            if(!isFlex) document.getElementById('chatInput').focus(); 
+        }
+
+        async function sendChat() {
+            const i = document.getElementById('chatInput'); 
+            const m = i.value.trim(); 
+            if(!m) return;
+            
+            const b = document.getElementById('chatBody'); 
+            b.innerHTML += `<div class="chat-msg chat-msg-user">${m}</div>`; 
+            i.value=''; 
+            b.scrollTop = b.scrollHeight;
+            
+            try { 
+                const res = await fetch('/chat', {method:'POST', body:new URLSearchParams({message:m})}); 
+                const d = await res.json(); 
+                
+                if (d.success) {
+                    b.innerHTML += `<div class="chat-msg chat-msg-ai">${marked.parse(d.response)}</div>`;
+                } else {
+                    b.innerHTML += `<div class="chat-msg chat-msg-ai text-danger">Error processing request</div>`;
+                }
+            } catch { 
+                b.innerHTML += `<div class="chat-msg chat-msg-ai text-danger">Server Offline</div>`; 
+            } 
+            b.scrollTop = b.scrollHeight;
+        }
+
+        async function clearChatMemory() {
+            await fetch('/clear-chat', {method:'POST'});
+            document.getElementById('chatBody').innerHTML = '<div class="chat-msg chat-msg-ai">Memory cleared. How can I help?</div>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Workspace</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Courgette&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #0984e3; /* Vibrant Blue */
+            --primary-hover: #74b9ff;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+            --input-bg: #ffffff;
+            --input-border: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .split-screen {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* --- LEFT SIDE: IMAGE & BRANDING --- */
+        .left-pane {
+            width: 55%;
+            /* Initial Image */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), 
+                              url('https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            /* Smooth transition for image change */
+            transition: background-image 1s ease-in-out;
+        }
+
+        .brand-title {
+            font-family: 'Courgette', cursive;
+            font-size: 5rem;
+            margin: 0;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        .brand-tagline {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-top: 1rem;
+            line-height: 1.6;
+            font-weight: 300;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        /* --- RIGHT SIDE: FORM --- */
+        .right-pane {
+            width: 45%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* Floating decoration */
+        .decoration-icon {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            font-size: 2rem;
+            color: var(--primary-color);
+            opacity: 0.8;
+            transform: rotate(-15deg);
+        }
+
+        .auth-wrapper {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .header-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .sub-header {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 40px;
+        }
+
+        /* Custom Inputs */
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-label-custom {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control-custom {
+            width: 100%;
+            padding: 14px 15px 14px 45px; /* Space for icon */
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+            background: #fff;
+        }
+
+        .form-control-custom:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(9, 132, 227, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 42px;
+            color: #b2bec3;
+            font-size: 1.1rem;
+        }
+
+        /* Buttons */
+        .btn-main {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.3);
+        }
+
+        .btn-main:hover {
+            transform: translateY(-2px);
+            background-color: #0077d6;
+        }
+
+        .btn-main:disabled {
+            background-color: #b2bec3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Footer Links */
+        .bottom-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-top: 30px;
+        }
+        .bottom-text span {
+            color: var(--primary-color);
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .forgot-pass {
+            display: block;
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-decoration: none;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        /* Alerts & Animation */
+        .alert-custom {
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid;
+        }
+        .alert-danger { background: #fff5f5; color: #c0392b; border-color: #c0392b; }
+        .alert-success { background: #f0fdf4; color: #27ae60; border-color: #27ae60; }
+
+        .view-section { display: none; animation: fadeIn 0.4s ease-out; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .left-pane { display: none; }
+            .right-pane { width: 100%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="split-screen">
+        
+        <div class="left-pane" id="bg-slider">
+            <h1 class="brand-title">AI Workspace</h1>
+            <p class="brand-tagline">
+                Experience the future of intelligence. <br>
+                Neural networks, automation, and creativity combined.
+            </p>
+        </div>
+
+        <div class="right-pane">
+            <i class="fas fa-robot decoration-icon"></i>
+            
+            <div class="auth-wrapper">
+
+                <div id="view-login" class="view-section active">
+                    <h2 class="header-text">Welcome</h2>
+                    <p class="sub-header">Login to your account</p>
+
+                    <div id="loginError" class="alert-custom alert-danger"></div>
+
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label-custom">Email Id</label>
+                            <i class="far fa-envelope input-icon"></i>
+                            <input type="text" id="loginUser" class="form-control-custom" placeholder="user@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-custom">Password</label>
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="loginPass" class="form-control-custom" placeholder="••••••••" required>
+                        </div>
+                        
+                        <a href="#" onclick="switchView('forgot')" class="forgot-pass">Forgot your password?</a>
+                        
+                        <button type="submit" class="btn-main">LOGIN</button>
+                    </form>
+
+                    <p class="bottom-text">
+                        Don't have an account? <span onclick="switchView('register')">Register Now</span>
+                    </p>
+                    
+                    <p class="bottom-text" style="margin-top: 15px; font-size: 0.8rem; opacity: 0.6;">
+                        <span onclick="toggleAdminMode()" id="adminToggleText" style="color: #636e72; font-weight: 500;">Switch to Admin Login</span>
+                    </p>
+                </div>
+
+                <div id="view-register" class="view-section">
+                    <h2 class="header-text">Register</h2>
+                    <p class="sub-header">Create a new account</p>
+
+                    <div id="regError" class="alert-custom alert-danger"></div>
+                    <div id="regSuccess" class="alert-custom alert-success">Account created! Redirecting...</div>
+
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label class="form-label-custom">Username</label>
+                            <i class="far fa-user input-icon"></i>
+                            <input type="text" id="regUser" class="form-control-custom" placeholder="Choose a username" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-custom">Password</label>
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="regPass" class="form-control-custom" placeholder="Create password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-main">REGISTER NOW</button>
+                    </form>
+
+                    <p class="bottom-text">
+                        Already have an account? <span onclick="switchView('login')">Login</span>
+                    </p>
+                </div>
+
+                <div id="view-forgot" class="view-section">
+                    <h2 class="header-text">Recovery</h2>
+                    <p class="sub-header">Reset your password</p>
+
+                    <div id="resetError" class="alert-custom alert-danger"></div>
+                    <div id="resetSuccess" class="alert-custom alert-success">Password updated! Please login.</div>
+
+                    <form onsubmit="handleReset(event)">
+                        <div class="form-group">
+                            <label class="form-label-custom">Username</label>
+                            <i class="far fa-user input-icon"></i>
+                            <input type="text" id="resetUser" class="form-control-custom" placeholder="Your username" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-custom">New Password</label>
+                            <i class="fas fa-key input-icon"></i>
+                            <input type="password" id="resetPass" class="form-control-custom" placeholder="New strong password" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-main">UPDATE PASSWORD</button>
+                    </form>
+
+                    <p class="bottom-text">
+                        <span onclick="switchView('login')">Back to Login</span>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. BACKGROUND SLIDESHOW LOGIC ---
+        const images = [
+            'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1600&q=80', // Abstract AI Brain
+            'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1600&q=80', // Futuristic AI/Cyber
+            'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&w=1600&q=80', // Human & Robot Hand
+            'https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=1600&q=80'  // Data City
+        ];
+        
+        let currentImgIdx = 0;
+        const leftPane = document.getElementById('bg-slider');
+
+        setInterval(() => {
+            currentImgIdx = (currentImgIdx + 1) % images.length;
+            // Linear gradient overlay ensures text remains readable
+            const overlay = "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))";
+            leftPane.style.backgroundImage = `${overlay}, url('${images[currentImgIdx]}')`;
+        }, 5000); // Change every 5 seconds
+
+        // --- 2. AUTHENTICATION LOGIC ---
+        let isAdminLogin = false;
+
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            document.querySelectorAll('.alert-custom').forEach(el => el.style.display = 'none');
+        }
+
+        function toggleAdminMode() {
+            isAdminLogin = !isAdminLogin;
+            const toggleText = document.getElementById('adminToggleText');
+            const loginUser = document.getElementById('loginUser');
+            const title = document.querySelector('#view-login .header-text');
+            
+            if(isAdminLogin) {
+                toggleText.innerText = "Switch to User Login";
+                toggleText.style.color = "#0984e3";
+                loginUser.placeholder = "Admin Username";
+                title.innerText = "Admin Portal";
+            } else {
+                toggleText.innerText = "Switch to Admin Login";
+                toggleText.style.color = "#636e72";
+                loginUser.placeholder = "user@example.com";
+                title.innerText = "Welcome";
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('loginUser').value;
+            const p = document.getElementById('loginPass').value;
+            const errBox = document.getElementById('loginError');
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+            errBox.style.display = 'none';
+
+            try {
+                const res = await fetch('/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: u, 
+                        password: p, 
+                        role: isAdminLogin ? 'admin' : 'user'
+                    })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    window.location.href = '/';
+                } else {
+                    errBox.innerText = data.error;
+                    errBox.style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            } catch (err) {
+                errBox.innerText = "Connection Failed";
+                errBox.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const u = document.getElementById('regUser').value;
+            const p = document.getElementById('regPass').value;
+            const errBox = document.getElementById('regError');
+            const sucBox = document.getElementById('regSuccess');
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating...';
+
+            try {
+                const res = await fetch('/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    sucBox.style.display = 'block';
+                    errBox.style.display = 'none';
+                    setTimeout(() => switchView('login'), 2000);
+                } else {
+                    errBox.innerText = data.error;
+                    errBox.style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            } catch(err) {
+                errBox.innerText = "Registration failed";
+                errBox.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
+        async function handleReset(e) {
+            e.preventDefault();
+            const u = document.getElementById('resetUser').value;
+            const p = document.getElementById('resetPass').value;
+            const errBox = document.getElementById('resetError');
+            const sucBox = document.getElementById('resetSuccess');
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
+
+            try {
+                const res = await fetch('/reset-password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username: u, new_password: p })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    sucBox.style.display = 'block';
+                    errBox.style.display = 'none';
+                    setTimeout(() => switchView('login'), 2000);
+                } else {
+                    errBox.innerText = data.error;
+                    errBox.style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            } catch(err) {
+                errBox.innerText = "Request failed";
+                errBox.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+    </script>
+</body>
+</html>
