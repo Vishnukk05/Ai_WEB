@@ -302,6 +302,9 @@ def get_stats():
     return jsonify({"cpu": cpu, "ram": ram, "usage": global_stats})
 
 # --- NEW: API to fetch Users for the Admin "Users" Tab ---
+# In app.py, find the @app.route('/api/users') function
+# Make sure it looks EXACTLY like this:
+
 @app.route('/api/users')
 def get_users_list():
     if not session.get('is_admin'): 
@@ -311,21 +314,26 @@ def get_users_list():
         users = User.query.all()
         data = []
         for user in users:
-            # Find last activity time
+            # Last Active Logic
             last_log = ActivityLog.query.filter_by(user_id=user.id).order_by(ActivityLog.timestamp.desc()).first()
             last_seen = "Never"
             if last_log:
                 last_seen = last_log.timestamp.strftime("%Y-%m-%d %H:%M")
             
-            # Count actions
+            # Action Count
             action_count = ActivityLog.query.filter_by(user_id=user.id).count()
 
+            # --- THIS PART IS CRITICAL FOR FIXING "UNDEFINED" ---
             data.append({
                 "id": user.id,
                 "username": user.username,
+                "full_name": user.full_name or "N/A",   # <--- Must be here
+                "department": user.department or "N/A", # <--- Must be here
                 "last_seen": last_seen,
                 "action_count": action_count
             })
+            # ----------------------------------------------------
+
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

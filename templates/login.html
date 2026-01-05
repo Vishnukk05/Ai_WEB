@@ -143,6 +143,12 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 4px rgba(9, 132, 227, 0.1);
         }
+        
+        /* Select Dropdown specific padding */
+        select.form-control-custom {
+             padding: 14px 15px 14px 45px;
+             appearance: none; /* Removes default arrow */
+        }
 
         .input-icon {
             position: absolute;
@@ -284,10 +290,29 @@
 
                     <form onsubmit="handleRegister(event)">
                         <div class="form-group">
-                            <label class="form-label-custom">Username</label>
+                            <label class="form-label-custom">Full Name</label>
+                            <i class="far fa-id-card input-icon"></i>
+                            <input type="text" id="regFullname" class="form-control-custom" placeholder="John Doe" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label-custom">Department / Role</label>
+                            <i class="fas fa-briefcase input-icon"></i>
+                            <select id="regDept" class="form-control-custom">
+                                <option value="General">General User</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="IT">IT / Admin</option>
+                                <option value="HR">Human Resources</option>
+                                <option value="Sales">Sales</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label-custom">Username / Email</label>
                             <i class="far fa-user input-icon"></i>
                             <input type="text" id="regUser" class="form-control-custom" placeholder="Choose a username" required>
                         </div>
+
                         <div class="form-group">
                             <label class="form-label-custom">Password</label>
                             <i class="fas fa-lock input-icon"></i>
@@ -424,6 +449,9 @@
             e.preventDefault();
             const u = document.getElementById('regUser').value;
             const p = document.getElementById('regPass').value;
+            const fname = document.getElementById('regFullname').value;
+            const dept = document.getElementById('regDept').value;
+            
             const errBox = document.getElementById('regError');
             const sucBox = document.getElementById('regSuccess');
             const btn = e.target.querySelector('button');
@@ -436,7 +464,13 @@
                 const res = await fetch('/register', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username: u, password: p })
+                    // SENDING NEW FIELDS: full_name and department
+                    body: JSON.stringify({ 
+                        username: u, 
+                        password: p,
+                        full_name: fname,
+                        department: dept
+                    })
                 });
                 const data = await res.json();
 
